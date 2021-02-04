@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db-dpl
+  labels:
+    app: db
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+     maxSurge: 0
+     maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: db
+  template:
+    metadata:
+      labels:
+        app: db
+    spec:
+      volumes:
+        - name: data 
+          persistentVolumeClaim:
+            claimName: myclaim
+      containers:
+        - name: postgres-db
+          image: postgres:10.13
+          ports:
+          - containerPort: 5432
+            protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: postgres-config
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: data 
